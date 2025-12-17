@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+
+    <h1>Secret Santa Z</h1>
+
+    {% if user.is_authenticated %}
+        <p> Hi {{user.first_name}} </p>
+        <p><a href="/logout/">Logout</a></p>
+        <form method="post" class="event_creation_form">
+            Create New Event
+
+
+
+
+        </form>
+
+        <p> <a href="/events/">View your events</a></p>
+    {% else %}
+        <p>
+            Login or Signup:
+            <a href="/login/">Login</a>
+            <a href="/signup/">Signup</a>
+        </p>
+    {% endif %}
+        
+
+    
+    
+    
+</body>
+</html>
+

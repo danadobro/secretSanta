@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+</head>
+<body>
+    <div class="container">
+
+        <form method="POST" class="signup_form">
+
+            <h1> Secret Santa Z</h1>
+
+            {% csrf_token %}
+
+            <h3>Signup</h3>
+
+            <hr>
+            
+            <!-- Display error/success messages -->
+            {% if messages %}
+            <div class="alert" role="alert">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+             <!-- First Name input field -->
+            <div class="form-group">
+                <label for="first_name">Name</label>
+                <input type="text" class="form-control" id="first_name" aria-describedby="emailHelp"
+                    placeholder="Name that other people will see" name="first_name" required>
+            </div>
+
+            <!-- email input field -->
+            <div class="form-group">
+                <label for="exampleInputEmail1">Email</label>
+                <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
+                    placeholder="Enter your email" required>
+            </div>
+
+            <!-- Password input field -->
+            <div class="form-group">
+                <label for="exampleInputPassword1">Password</label>
+                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+            </div>
+
+            <!-- Link to registration page -->
+            <p>Already have an account? <a href="/login/">Login</a> </p>
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary">Submit</button>
+
+
+
+
+
+
+
+
+        </form>
+
+
+
+
+
+
+
+
+    </div>
+    
+</body>
+</html>
