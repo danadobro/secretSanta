@@ -27,5 +27,7 @@ urlpatterns = [
     path("signup/", signup_view, name="signup"),
     path("", home, name="home"), #home as root
     path("logout/", logout_view, name="logout"),
+    path("create/", create_event, name="create_event"),
+    path("event_detail/", event_view, name="event_detail")
 ]
 

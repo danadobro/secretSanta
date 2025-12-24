@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+</head>
+<body>
+
+    <div class="event_form">
+
+        <form method="post">
+            {% csrf_token %}
+
+            Name of Celebration
+
+            <div class="form-group">
+                Name of Celebration
+                <input type="text" class="form-control" name="event_name" 
+                    placeholder="Family Secret Santa"required>
+                
+                Date of the Gift Exchange
+                <input type="date" name="event_date" class="form-control" required>
+
+                Time of the Gift Exchange
+                <input type="time" name="event_time" class="form-control">
+
+                Location of the Gift Exchange
+                <input type="text" name="event_location" class="form-control">
+
+                Suggested Budget for the Gift 
+                <input type="text" name="event_budget" class="form-control">
+
+
+
+                Who is participating in this event?
+                <input type="text" class="form-control" name="p1" 
+                    value="{{ organizer_name }}" readonly> <!-- Include the organizer's name automatically -->
+                <input type="email" class="form-control" name="p1_email"
+                    value="{{ organizer_email }}" readonly>
+
+                <input type="text" class="form-control" name="p2" 
+                    placeholder="Name 2" required>
+                <input type="email" class="form-control" name="p2_email"
+                    placeholder="Name 2 Email" required>
+
+                <input type="text" class="form-control" name="p3" placeholder="Name 3" required>
+                <input type="email" class="form-control" name="p3_email"
+                    placeholder="Name 3 Email" required>
+
+
+                <input type="text" class="form-control" name="p4" 
+                    placeholder="Name 4" required>
+                <input type="email" class="form-control" name="p4_email" 
+                    placeholder="Name 4 Email" required>
+
+
+                <div class="extras" id="extras"> <!-- Show one by one another input field if the user decides to add more participants -->
+
+                    {% for i in extra_range %}
+                        <input type="text" name="p{{ i }}" placeholder="Add name {{ i }}" class="extra hidden"> 
+                        <input type="email" name="p{{i}}_email"  class="extra hidden form-control"
+                    placeholder="Name {{i}} Email">
+                    {% endfor %}
+
+
+                </div>
+
+                {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+
+                <button type="button" id="addBtn">+</button>
+                <button type="submit">Create event</button>
+            </div>
+
+        </form>
+        </div>
+
+
+    <script>
+        // All extra inputs names and emails
+        const extras = document.querySelectorAll(".extra");
+
+        const addBtn = document.getElementById("addBtn");
+
+        // Each extra participant = 2 inputs (name + email)
+        const inputsPerParticipant = 2;
+
+        // How many extra participants exist in the HTML
+        const maxExtraParticipants = extras.length / inputsPerParticipant;
+
+        // How many extra participants are currently visible
+        let shownExtraParticipants = 0;
+
+        addBtn.addEventListener("click", function () {
+
+            // Figure out which 2 inputs to show next
+            const nameIndex = shownExtraParticipants * inputsPerParticipant;
+            const emailIndex = nameIndex + 1;
+
+            // Show name + email together
+            extras[nameIndex].classList.remove("hidden");
+            extras[emailIndex].classList.remove("hidden");
+
+            // Cursor goes to the name field
+            extras[nameIndex].focus();
+
+            // Update count
+            shownExtraParticipants++;
+
+            // If we just revealed the last possible participant, disable "+"
+            if (shownExtraParticipants >= maxExtraParticipants) {
+            addBtn.disabled = true;
+            return
+            }
+        });
+    </script>
+
+
+    <style>
+    .hidden { display: none; }
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+    
+</body>
+</html>

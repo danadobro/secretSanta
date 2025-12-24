@@ -12,20 +12,15 @@
     {% if user.is_authenticated %}
         <p> Hi {{user.first_name}} </p>
         <p><a href="/logout/">Logout</a></p>
-        <form method="post" class="event_creation_form">
-            Create New Event
+        
+        <p> <a href="create/">Create New Event</a></p>
 
-
-
-
-        </form>
-
-        <p> <a href="/events/">View your events</a></p>
+        <p> <a href="events/">View your events</a></p>
     {% else %}
         <p>
             Login or Signup:
-            <a href="/login/">Login</a>
-            <a href="/signup/">Signup</a>
+            <a href="login/">Login</a>
+            <a href="signup/">Signup</a>
         </p>
     {% endif %}
         

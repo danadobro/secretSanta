@@ -3,6 +3,11 @@ from django.contrib.auth.models import User
 
 class Event(models.Model):
     event_name = models.CharField(max_length=30)
+    organizer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="organized_events"
+    )
     event_date = models.DateField()
     budget = models.CharField(max_length=20, blank=True)
     time = models.TimeField(blank=True, null=True)
