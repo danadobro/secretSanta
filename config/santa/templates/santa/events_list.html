@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Events</title>
+</head>
+<body>
+<h1>My Events</h1>
+
+{% if events %}
+    <ul>
+        {% for event in events %}
+            <li>
+                <a href="{% url 'event_details' event.id %}">
+                {{ event.event_name }}</a><br>
+                Date: {{ event.event_date }}<br>
+                Organizer: {{ event.organizer.username }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You are not part of any events yet.</p>
+{% endif %} 
+    
+</body>
+</html>

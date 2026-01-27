@@ -16,20 +16,20 @@
 
             <div class="form-group">
                 Name of Celebration
-                <input type="text" class="form-control" name="event_name" 
+                <input type="text" class="form-control" name="event_name" value="{{ saved_event.event_name|default:'' }}"
                     placeholder="Family Secret Santa"required>
                 
                 Date of the Gift Exchange
-                <input type="date" name="event_date" class="form-control" required>
+                <input type="date" name="event_date" class="form-control" value="{{ saved_event.event_date|default:'' }}" required>
 
                 Time of the Gift Exchange
-                <input type="time" name="event_time" class="form-control">
+                <input type="time" name="event_time" class="form-control" value="{{ saved_event.event_time|default:'' }}">
 
                 Location of the Gift Exchange
-                <input type="text" name="event_location" class="form-control">
+                <input type="text" name="event_location" class="form-control" value="{{ saved_event.event_location|default:'' }}">
 
                 Suggested Budget for the Gift 
-                <input type="text" name="event_budget" class="form-control">
+                <input type="text" name="event_budget" class="form-control" value="{{ saved_event.event_budget|default:'' }}">
 
 
 
@@ -39,29 +39,35 @@
                 <input type="email" class="form-control" name="p1_email"
                     value="{{ organizer_email }}" readonly>
 
-                <input type="text" class="form-control" name="p2" 
+                <input type="text" class="form-control" name="p2" value="{{ saved_participants.1.name|default:'' }}"
                     placeholder="Name 2" required>
-                <input type="email" class="form-control" name="p2_email"
+                <input type="email" class="form-control" name="p2_email" value="{{ saved_participants.1.email|default:'' }}"
                     placeholder="Name 2 Email" required>
 
-                <input type="text" class="form-control" name="p3" placeholder="Name 3" required>
-                <input type="email" class="form-control" name="p3_email"
+                <input type="text" class="form-control" name="p3" placeholder="Name 3" value="{{ saved_participants.2.name|default:'' }}" required>
+                <input type="email" class="form-control" name="p3_email" value="{{ saved_participants.2.email|default:'' }}"
                     placeholder="Name 3 Email" required>
 
 
-                <input type="text" class="form-control" name="p4" 
+                <input type="text" class="form-control" name="p4" value="{{ saved_participants.3.name|default:'' }}"
                     placeholder="Name 4" required>
-                <input type="email" class="form-control" name="p4_email" 
+                <input type="email" class="form-control" name="p4_email" value="{{ saved_participants.3.email|default:'' }}" 
                     placeholder="Name 4 Email" required>
 
 
                 <div class="extras" id="extras"> <!-- Show one by one another input field if the user decides to add more participants -->
 
                     {% for i in extra_range %}
-                        <input type="text" name="p{{ i }}" placeholder="Add name {{ i }}" class="extra hidden"> 
-                        <input type="email" name="p{{i}}_email"  class="extra hidden form-control"
+                        <input type="text" name="p{{ i }}" placeholder="Add name {{ i }}"  class="extra hidden"> 
+                        <input type="email" name="p{{i}}_email" class="extra hidden form-control"
                     placeholder="Name {{i}} Email">
                     {% endfor %}
+
+
+                </div>
+
+                <div class="restrictions">
+
 
 
                 </div>
@@ -69,7 +75,7 @@
                 {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
 
                 <button type="button" id="addBtn">+</button>
-                <button type="submit">Create event</button>
+                <button type="submit">Next</button>
             </div>
 
         </form>

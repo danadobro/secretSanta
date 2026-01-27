@@ -1,10 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Event, Participant
+from .models import Event, Participant, Exclusion, Match
+from django.db.models import Q
+from django.db import transaction
+from .logic import generate_secret_santa_matches
 
 def login_view(request):
     if request.method == "POST":
@@ -119,24 +122,174 @@ def create_event(request):
 
 
 
+        # store in session until restrictions are added 
+        request.session["event_data"] = {
+            "event_name": event_name,
+            "event_date": event_date,
+            "event_time": event_time,
+            "event_location": event_location,
+            "event_budget": event_budget,
+            }
+        request.session["participants"] = [{"name": n, "email": e} for n, e in participants]
 
-        #create the event model object and return the event page
-        event = Event.objects.create(organizer=request.user, event_name=event_name, event_date=event_date, budget = event_budget, time=event_time, location=event_location )  # ******************************
-        for name, email in participants:
-            Participant.objects.create(event=event, name=name, email=email) #create participant model object tied to the event object 
 
-        return redirect("event_detail") #, event_id=event.id) #********************************************************************************************************
+        return redirect("event_restrictions") 
 
-    #the initial return view of the form
-    return render(request, "santa/create_event.html", {  
+    saved_event = request.session.get("event_data", {})
+    saved_participants = request.session.get("participants", [])
+
+    return render(request, "santa/create_event.html", {
         "organizer_name": organizer_name,
         "organizer_email": organizer_email,
         "extra_range": range(5, 31),
-        })
+        "saved_event": saved_event,
+        "saved_participants": saved_participants,
+    })
 
 @login_required
-def event_view(request):
-    return render(request, "santa/event.html")
+def event_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
 
-        
+    is_organizer = (event.organizer == request.user)
+
+    participant = Participant.objects.filter(event=event, email=request.user.email).first()
+
+    my_match = None
+    if participant:
+        my_match = Match.objects.filter(event=event, giver=participant).select_related("receiver").first()
+
+    all_matches = None
+    if is_organizer:
+        all_matches = Match.objects.filter(event=event).select_related("giver", "receiver").order_by("giver__name")
+
+    return render(request, "santa/event.html", {
+        "event": event,
+        "is_organizer": is_organizer,
+        "participant": participant,
+        "my_match": my_match,
+        "all_matches": all_matches,
+    })
+
+
+@login_required
+def events(request):
+    user = request.user
+
+    events = Event.objects.filter(
+        Q(organizer=user) |
+        Q(participants__email=user.email)
+    ).distinct()
+
+    return render(request, "santa/events_list.html", {
+        "events": events
+    })
+
+
+@login_required
+def restrictions_view(request):
+    event_data = request.session.get("event_data")
+    participants = request.session.get("participants")  # list of dicts: {"name","email"}
+
+    if not event_data or not participants:
+        return redirect("create_event")
+
+    # GET: show restrictions UI
+    if request.method == "GET":
+        return render(request, "santa/restrictions.html", {
+            "event_data": event_data,
+            "participants": participants,
+            "max_exclusions": max(0, len(participants) - 3), #they need at least 2 choices each and they cant choose themselves already
+        })
+
+    # POST: save everything in one go
+    # 1) Create event
+    event = Event.objects.create(
+        organizer=request.user,
+        event_name=event_data["event_name"],
+        event_date=event_data["event_date"],
+        time=event_data.get("event_time") or None,
+        location=event_data.get("event_location", ""),
+        budget=event_data.get("event_budget", ""),
+    )
+
+    # 2) Create participants
+    participant_objs = [
+        Participant(event=event, name=p["name"], email=p["email"])
+        for p in participants
+    ]
+    Participant.objects.bulk_create(participant_objs)
+
+    # Make a stable list in the same order as step 1:
+    participants_db = list(event.participants.all().order_by("id"))
+
+    n = len(participants_db)
+    max_allowed = max(0, n - 3)
+
+    # 3) Save exclusions
+    for giver_index, giver in enumerate(participants_db):
+        selected = request.POST.getlist(f"exclude_{giver_index}")  # list of indexes as strings
+
+        # server-side validation
+        if len(selected) > max_allowed:
+            # Clean up created event to avoid partial DB save
+            event.delete()
+            return render(request, "santa/restrictions.html", {
+                "event_data": event_data,
+                "participants": participants,
+                "max_exclusions": max_allowed,
+                "error": f"You can exclude at most {max_allowed} names per person."
+            })
+
+        for idx_str in selected:
+            try:
+                idx = int(idx_str)
+            except ValueError:
+                continue
+
+            if idx < 0 or idx >= n:
+                continue
+
+            excluded = participants_db[idx]
+
+            # prevent excluding self (in case UI ever allows it)
+            if excluded.id == giver.id:
+                continue
+
+            Exclusion.objects.create(event=event, giver=giver, excluded=excluded)
+
+    # 4) Clear session
+    request.session.pop("event_data", None)
+    request.session.pop("participants", None)
+
+    return redirect("event_details", event_id=event.id)
+
+@login_required
+def generate_matches_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # organizer-only
+    if event.organizer != request.user:
+        messages.error(request, "Only the organizer can generate matches.")
+        return redirect("event_detail", event_id=event.id)
+
+    if request.method != "POST":
+        return redirect("event_detail", event_id=event.id)
+
+    with transaction.atomic():
+        # If re-generating, clear old matches first
+        Match.objects.filter(event=event).delete()
+
+        matches = generate_secret_santa_matches(event)
+        if matches is None:
+            messages.error(request, "Too many restrictions — can't generate valid matches.")
+            return redirect("event_details", event_id=event.id)
+
+        # Save matches
+        objs = []
+        for giver, receiver in matches.items():
+            objs.append(Match(event=event, giver=giver, receiver=receiver))
+        Match.objects.bulk_create(objs)
+
+    messages.success(request, "Matches generated!")
+    return redirect("event_details", event_id=event.id)
 

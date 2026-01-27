@@ -33,8 +33,28 @@ class Match(models.Model):
     giver = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='matches_as_giver')
     receiver = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name='matches_as_receiver')
 
+    class Meta:
+        constraints = [ #to prevent 2 people getting the same person
+            models.UniqueConstraint(fields=["event", "giver"], name="unique_giver_per_event"),
+            models.UniqueConstraint(fields=["event", "receiver"], name="unique_receiver_per_event"),
+        ]
+
     def __str__(self):
         return f"{self.giver.name} → {self.receiver.name}"
+    
+    
+class Exclusion(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="exclusions")
+    giver = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="exclusions_as_giver")
+    excluded = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="excluded_by")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["event", "giver", "excluded"], name="unique_exclusion"),
+        ]
+
+    def __str__(self):
+        return f"{self.giver.name} cannot draw {self.excluded.name}"
 
 #class Wishlist(models.Model):
  #   pass
