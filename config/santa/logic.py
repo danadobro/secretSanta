@@ -80,3 +80,54 @@ def generate_secret_santa_matches(event: Event, *, max_attempts: int = 2000) -> 
                 return result
 
     return None
+
+def dry_run_matches_from_restrictions(
+    num_participants: int,
+    restrictions_map: Dict[int, Set[int]],
+    *,
+    max_attempts: int = 2000
+) -> Optional[Dict[int, int]]:
+    """
+    restrictions_map: giver_index -> set of forbidden receiver_indexes (should include self)
+    returns mapping giver_index -> receiver_index, or None if impossible
+    """
+    n = num_participants
+    ids = list(range(n))
+
+    # allowed receivers per giver (index-based)
+    allowed: Dict[int, List[int]] = {}
+    for gi in ids:
+        forbidden = restrictions_map.get(gi, set())
+        allowed[gi] = [r for r in ids if r not in forbidden]
+
+    # quick fail
+    if any(len(opts) == 0 for opts in allowed.values()):
+        return None
+
+    for _ in range(max_attempts):
+        givers = sorted(ids, key=lambda gi: len(allowed[gi]))  # most constrained first
+        used = set()
+        assignment: Dict[int, int] = {}
+
+        def backtrack(k: int) -> bool:
+            if k == n:
+                return True
+
+            giver = givers[k]
+            options = [r for r in allowed[giver] if r not in used]
+            random.shuffle(options)
+
+            for r in options:
+                assignment[giver] = r
+                used.add(r)
+                if backtrack(k + 1):
+                    return True
+                used.remove(r)
+                del assignment[giver]
+            return False
+
+        if backtrack(0):
+            return assignment
+
+    return None
+

@@ -1,78 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Restrictions</title>
-  <style>
-    .card { border: 1px solid #ddd; padding: 12px; margin: 12px 0; border-radius: 8px; }
-    .btn { padding: 8px 10px; cursor: pointer; }
-    .panel { margin-top: 10px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; display: none; }
-    .error { color: #b00020; margin: 10px 0; }
-    .muted { color: #666; font-size: 0.9em; }
-    label { display: block; margin: 6px 0; }
-  </style>
-</head>
-<body>
+{% extends "santa/base.html" %}
+{% block title %}Restrictions{% endblock %}
+{% block content %}
 
-  <h1>Step 2 — Restrictions</h1>
+    <h1>Step 2 — Restrictions</h1>
 
-  <p class="muted">
-    Event: <strong>{{ event_data.event_name }}</strong>
-  </p>
+    <p class="muted">
+        Event: <strong>{{ event_data.event_name }}</strong>
+    </p>
 
-  {% if error %}
-    <div class="error">{{ error }}</div>
-  {% endif %}
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
 
-  <form method="post">
-    {% csrf_token %}
+    <form method="post">
+        {% csrf_token %}
 
-    {% for giver in participants %}
-      {% with gi=forloop.counter0 %}  <!-- gi = giver index, every participant has an index and exclusions are a list like exclude_0=[2,5] -->
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-            <strong>{{ giver.name }}</strong>
+        {% for giver in participants %}
+        {% with gi=forloop.counter0 %}  <!-- gi = giver index, every participant has an index and exclusions are a list like exclude_0=[2,5] -->
+            <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <strong>{{ giver.name }}</strong>
 
-            <button
-              type="button"
-              class="btn"
-              onclick="togglePanel('{{ gi }}')"
-            >
-              Select names to exclude
-            </button>
-          </div>
-
-          <div id="panel_{{ gi }}" class="panel">
-            <div class="muted" style="margin-bottom:8px;">
-              {{ giver.name }} cannot draw (max: {{ max_exclusions }})
+                <button
+                type="button"
+                class="btn"
+                onclick="togglePanel('{{ gi }}')"
+                >
+                Select names to exclude
+                </button>
             </div>
 
-            {% for p in participants %}
-              {% if p.email != giver.email %}
-                <label>
-                  <input
-                    type="checkbox"
-                    name="exclude_{{ gi }}"
-                    value="{{ forloop.counter0 }}"
-                    class="exclusion exclusion-{{ gi }}"
-                    onchange="enforceLimit('{{ gi }}', {{ max_exclusions }})"
-                  />
-                  {{ p.name }}
-                </label>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      {% endwith %}
-    {% endfor %}
+            <div id="panel_{{ gi }}" class="panel">
+                <div class="muted" style="margin-bottom:8px;">
+                {{ giver.name }} cannot draw (max: {{ max_exclusions }})
+                </div>
 
-    <a href="{% url 'create_event' %}" class="btn" style="display:inline-block; text-decoration:none;">
-        ← Back
-    </a>
+                {% for p in participants %}
+                {% if p.email != giver.email %}
+                    <label>
+                    <input
+                        type="checkbox"
+                        name="exclude_{{ gi }}"
+                        value="{{ forloop.counter0 }}"
+                        class="exclusion exclusion-{{ gi }}"
+                        onchange="enforceLimit('{{ gi }}', {{ max_exclusions }})"
+                    />
+                    {{ p.name }}
+                    </label>
+                {% endif %}
+                {% endfor %}
+            </div>
+            </div>
+        {% endwith %}
+        {% endfor %}
 
-    <button type="submit" class="btn">Finish & Create Event</button>
-  </form>
+        <a href="{% url 'create_event' %}" class="btn" style="display:inline-block; text-decoration:none;">
+            ← Back
+        </a>
+
+        <button type="submit" class="btn">Finish & Create Event</button>
+    </form>
+    
 
   <script>
     function togglePanel(giverIndex) {
@@ -91,6 +79,5 @@
       }
     }
   </script>
+{% endblock %}
 
-</body>
-</html>

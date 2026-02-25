@@ -1,80 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <div class="container"> 
+{% extends "santa/base.html" %}
+{% block title %}Login{% endblock %}
+    {% block content %}
+        <div class="card"> 
 
-        <form method="POST" class="login_form">
+            <form method="POST" class="login_form">
 
-            <h1> Secret Santa Z </h1>
+                <h1> Welcome Back </h1>
+                <p class="sub">Log in to manage your Secret Santa events</p>
 
-            {% csrf_token %}
-
-            <h3> Login </h3>
-
-            <hr>
-
-            <!-- Display error/success messages -->
-            {% if messages %}
-            <div class="alert" role="alert">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- email input field -->
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
-                    placeholder="Enter your email" required>
-            </div>
-
-            <!-- Password input field -->
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
-            </div>
-
-            <!-- Link to registration page -->
-            <p>Don't have an account <a href="/signup/">Signup</a> </p>
-
-            <!-- Submit button -->
-            <button type="submit" class="btn btn-primary">Submit</button>
+                {% csrf_token %}
 
 
+                <hr>
 
+                <!-- Display error/success messages -->
+                {% if messages %}
+                <div class="alert" role="alert">
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
 
-        </form>
+                <!-- email input field -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
+                        placeholder="Enter your email" required>
+                </div>
+
+                <!-- Password input field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                </div>
+
+                <!-- Link to registration page -->
+                <p>Don't have an account <a href="{% url 'signup' %}">Signup</a> </p>
+                
+
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary">Submit</button>
+
+            </form>
+            
 
 
     </div>
+{% endblock %}
 
 
-
-
-
-
-
-
-
-
-
-
-
-</body>
-
-
-
-
-
-
-
-
-
-
-</html>

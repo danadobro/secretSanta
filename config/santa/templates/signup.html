@@ -1,75 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
-</head>
-<body>
-    <div class="container">
+{% extends "santa/base.html" %}
+{% block title %}Signup{% endblock %}
 
-        <form method="POST" class="signup_form">
+    {% block content %}
+        <div class="card">
 
-            <h1> Secret Santa Z</h1>
+            <form method="POST" class="signup_form">
 
-            {% csrf_token %}
+                
 
-            <h3>Signup</h3>
+                {% csrf_token %}
+                <h1>Create account</h1>
 
-            <hr>
-            
-            <!-- Display error/success messages -->
-            {% if messages %}
-            <div class="alert" role="alert">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
+                <p class="sub">Sign up to get started with Secret Santa</p>
 
-             <!-- First Name input field -->
-            <div class="form-group">
-                <label for="first_name">Name</label>
-                <input type="text" class="form-control" id="first_name" aria-describedby="emailHelp"
-                    placeholder="Name that other people will see" name="first_name" required>
-            </div>
+                <hr>
+                
+                <!-- Display error/success messages -->
+                {% if messages %}
+                <div class="alert" role="alert">
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
 
-            <!-- email input field -->
-            <div class="form-group">
-                <label for="exampleInputEmail1">Email</label>
-                <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
-                    placeholder="Enter your email" required>
-            </div>
+                <!-- First Name input field -->
+                <div class="form-group">
+                    <label for="first_name">Name</label>
+                    <input type="text" class="form-control" id="first_name" aria-describedby="emailHelp"
+                        placeholder="Shown to others" name="first_name" required>
+                </div>
 
-            <!-- Password input field -->
-            <div class="form-group">
-                <label for="exampleInputPassword1">Password</label>
-                <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
-            </div>
+                <!-- email input field -->
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
+                        placeholder="Enter your email" required>
+                </div>
 
-            <!-- Link to registration page -->
-            <p>Already have an account? <a href="/login/">Login</a> </p>
+                <!-- Password input field -->
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Password</label>
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                </div>
 
-            <!-- Submit button -->
-            <button type="submit" class="btn btn-primary">Submit</button>
+                <!-- Link to registration page -->
+                <p>Already have an account? <a href="{% url 'login' %}">Login</a> </p>
+
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary">Sign Up</button>
 
 
-
-
-
-
-
-
-        </form>
-
-
-
-
-
-
-
-
-    </div>
-    
-</body>
-</html>
+            </form>
+        </div>
+        {% endblock %}

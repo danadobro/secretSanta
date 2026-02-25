@@ -1,85 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Event</title>
-</head>
-<body>
+{% extends "santa/base.html" %}
 
-    <div class="event_form">
+{% block title %}Create Event{% endblock %}
+{% block content %}
+    <div class="card">
 
-        <form method="post">
-            {% csrf_token %}
+        <div class="event_form">
 
-            Name of Celebration
+            <form method="post">
+                {% csrf_token %}
 
-            <div class="form-group">
-                Name of Celebration
-                <input type="text" class="form-control" name="event_name" value="{{ saved_event.event_name|default:'' }}"
-                    placeholder="Family Secret Santa"required>
-                
-                Date of the Gift Exchange
-                <input type="date" name="event_date" class="form-control" value="{{ saved_event.event_date|default:'' }}" required>
+                <p class="sub"> Set Up Your Secret Santa </p>
 
-                Time of the Gift Exchange
-                <input type="time" name="event_time" class="form-control" value="{{ saved_event.event_time|default:'' }}">
-
-                Location of the Gift Exchange
-                <input type="text" name="event_location" class="form-control" value="{{ saved_event.event_location|default:'' }}">
-
-                Suggested Budget for the Gift 
-                <input type="text" name="event_budget" class="form-control" value="{{ saved_event.event_budget|default:'' }}">
-
-
-
-                Who is participating in this event?
-                <input type="text" class="form-control" name="p1" 
-                    value="{{ organizer_name }}" readonly> <!-- Include the organizer's name automatically -->
-                <input type="email" class="form-control" name="p1_email"
-                    value="{{ organizer_email }}" readonly>
-
-                <input type="text" class="form-control" name="p2" value="{{ saved_participants.1.name|default:'' }}"
-                    placeholder="Name 2" required>
-                <input type="email" class="form-control" name="p2_email" value="{{ saved_participants.1.email|default:'' }}"
-                    placeholder="Name 2 Email" required>
-
-                <input type="text" class="form-control" name="p3" placeholder="Name 3" value="{{ saved_participants.2.name|default:'' }}" required>
-                <input type="email" class="form-control" name="p3_email" value="{{ saved_participants.2.email|default:'' }}"
-                    placeholder="Name 3 Email" required>
+                <div class="form-group">
+                    Event Name
+                    <input type="text" class="form-control" name="event_name" value="{{ saved_event.event_name|default:'' }}"
+                        placeholder="Family Secret Santa"required>
+                </div>
+                    
+                <div class="form-group">        
+                    Gift Exchange Date
+                    <input type="date" name="event_date" class="form-control" value="{{ saved_event.event_date|default:'' }}" required>
+                </div>
+                <div class="form-group"> 
+                    Time
+                    <input type="time" name="event_time" class="form-control" value="{{ saved_event.event_time|default:'' }}">
+                </div>    
+                <div class="form-group">     
+                    Location
+                    <input type="text" name="event_location" class="form-control" value="{{ saved_event.event_location|default:'' }}">
+                    </div>
+                <div class="form-group">     
+                    Suggested Budget for the Gift 
+                    <input type="text" name="event_budget" class="form-control" value="{{ saved_event.event_budget|default:'' }}">
+                    </div>
 
 
-                <input type="text" class="form-control" name="p4" value="{{ saved_participants.3.name|default:'' }}"
-                    placeholder="Name 4" required>
-                <input type="email" class="form-control" name="p4_email" value="{{ saved_participants.3.email|default:'' }}" 
-                    placeholder="Name 4 Email" required>
+                    Who is participating in this event?
+                    <div class="form-group"> 
+                    <input type="text" class="form-control" name="p1" 
+                        value="{{ organizer_name }}" readonly> <!-- Include the organizer's name automatically -->
+                    <input type="email" class="form-control" name="p1_email"
+                        value="{{ organizer_email }}" readonly>
+                    </div>
+                    <div class="form-group">     
+                    <input type="text" class="form-control" name="p2" value="{{ saved_participants.1.name|default:'' }}"
+                        placeholder="Name 2" required>
+                    <input type="email" class="form-control" name="p2_email" value="{{ saved_participants.1.email|default:'' }}"
+                        placeholder="Name 2 Email" required>
+                        </div>
+                    <div class="form-group"> 
+                    <input type="text" class="form-control" name="p3" placeholder="Name 3" value="{{ saved_participants.2.name|default:'' }}" required>
+                    <input type="email" class="form-control" name="p3_email" value="{{ saved_participants.2.email|default:'' }}"
+                        placeholder="Name 3 Email" required>
+                        </div>
+                    <div class="form-group"> 
+                    <input type="text" class="form-control" name="p4" value="{{ saved_participants.3.name|default:'' }}"
+                        placeholder="Name 4" required>
+                    <input type="email" class="form-control" name="p4_email" value="{{ saved_participants.3.email|default:'' }}" 
+                        placeholder="Name 4 Email" required>
+                        </div>
+
+                    <div class="extras" id="extras"> <!-- Show one by one another input field if the user decides to add more participants -->
+
+                        {% for i in extra_range %}
+                        <div class="form-group"> 
+                            <input type="text" name="p{{ i }}" placeholder="Name {{ i }}"  class="extra hidden"> 
+                            <input type="email" name="p{{i}}_email" class="extra hidden form-control"
+                        placeholder="Name {{i}} Email">
+                        </div>
+                        {% endfor %}
 
 
-                <div class="extras" id="extras"> <!-- Show one by one another input field if the user decides to add more participants -->
+                    </div>
 
-                    {% for i in extra_range %}
-                        <input type="text" name="p{{ i }}" placeholder="Add name {{ i }}"  class="extra hidden"> 
-                        <input type="email" name="p{{i}}_email" class="extra hidden form-control"
-                    placeholder="Name {{i}} Email">
-                    {% endfor %}
+                    <div class="restrictions">
 
 
+
+                    </div>
+
+                    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+
+                    <button class="btn" type="button" id="addBtn">+</button>
+                    <button class="btn btn-primary" type="submit">Next</button>
                 </div>
 
-                <div class="restrictions">
-
-
-
-                </div>
-
-                {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
-
-                <button type="button" id="addBtn">+</button>
-                <button type="submit">Next</button>
+            </form>
             </div>
-
-        </form>
         </div>
+        
 
 
     <script>
@@ -125,17 +134,4 @@
     <style>
     .hidden { display: none; }
     </style>
-
-
-
-
-
-
-
-
-
-
-
-    
-</body>
-</html>
+    {% endblock %}

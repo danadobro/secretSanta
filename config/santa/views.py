@@ -7,7 +7,9 @@ from django.contrib.auth.decorators import login_required
 from .models import Event, Participant, Exclusion, Match
 from django.db.models import Q
 from django.db import transaction
-from .logic import generate_secret_santa_matches
+from .logic import generate_secret_santa_matches, dry_run_matches_from_restrictions
+from django.core.mail import send_mail
+from django.conf import settings
 
 def login_view(request):
     if request.method == "POST":
@@ -61,7 +63,7 @@ def signup_view(request):
 
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'santa/home.html')
 
 def logout_view(request):
     logout(request)
@@ -193,16 +195,53 @@ def restrictions_view(request):
     if not event_data or not participants:
         return redirect("create_event")
 
-    # GET: show restrictions UI
     if request.method == "GET":
         return render(request, "santa/restrictions.html", {
             "event_data": event_data,
             "participants": participants,
-            "max_exclusions": max(0, len(participants) - 3), #they need at least 2 choices each and they cant choose themselves already
+            "max_exclusions": max(0, len(participants) - 3),
         })
 
-    # POST: save everything in one go
-    # 1) Create event
+    # ---------- POST ----------
+    n = len(participants)
+    max_allowed = max(0, n - 3)
+
+    # 1) Build restrictions_map (index-based) + validate
+    restrictions_map = {}
+
+    for giver_index in range(n):
+        selected = request.POST.getlist(f"exclude_{giver_index}")
+
+        if len(selected) > max_allowed:
+            return render(request, "santa/restrictions.html", {
+                "event_data": event_data,
+                "participants": participants,
+                "max_exclusions": max_allowed,
+                "error": f"You can exclude at most {max_allowed} names per person."
+            })
+
+        forbidden = {giver_index}  # always forbid self
+        for idx_str in selected:
+            try:
+                idx = int(idx_str)
+            except ValueError:
+                continue
+            if 0 <= idx < n and idx != giver_index:
+                forbidden.add(idx)
+
+        restrictions_map[giver_index] = forbidden
+
+    # 2) DRY RUN: test if matching is possible BEFORE saving event
+    test_assignment = dry_run_matches_from_restrictions(n, restrictions_map)
+    if test_assignment is None:
+        return render(request, "santa/restrictions.html", {
+            "event_data": event_data,
+            "participants": participants,
+            "max_exclusions": max_allowed,
+            "error": "Too many restrictions — can't generate valid matches. Remove a few exclusions and try again."
+        })
+
+    # 3) Now it's safe: create event + participants + exclusions
     event = Event.objects.create(
         organizer=request.user,
         event_name=event_data["event_name"],
@@ -212,56 +251,34 @@ def restrictions_view(request):
         budget=event_data.get("event_budget", ""),
     )
 
-    # 2) Create participants
     participant_objs = [
         Participant(event=event, name=p["name"], email=p["email"])
         for p in participants
     ]
     Participant.objects.bulk_create(participant_objs)
 
-    # Make a stable list in the same order as step 1:
     participants_db = list(event.participants.all().order_by("id"))
 
-    n = len(participants_db)
-    max_allowed = max(0, n - 3)
-
-    # 3) Save exclusions
     for giver_index, giver in enumerate(participants_db):
-        selected = request.POST.getlist(f"exclude_{giver_index}")  # list of indexes as strings
-
-        # server-side validation
-        if len(selected) > max_allowed:
-            # Clean up created event to avoid partial DB save
-            event.delete()
-            return render(request, "santa/restrictions.html", {
-                "event_data": event_data,
-                "participants": participants,
-                "max_exclusions": max_allowed,
-                "error": f"You can exclude at most {max_allowed} names per person."
-            })
-
+        selected = request.POST.getlist(f"exclude_{giver_index}")
         for idx_str in selected:
             try:
                 idx = int(idx_str)
             except ValueError:
                 continue
-
-            if idx < 0 or idx >= n:
-                continue
-
-            excluded = participants_db[idx]
-
-            # prevent excluding self (in case UI ever allows it)
-            if excluded.id == giver.id:
-                continue
-
-            Exclusion.objects.create(event=event, giver=giver, excluded=excluded)
+            if 0 <= idx < n and idx != giver_index:
+                Exclusion.objects.create(
+                    event=event,
+                    giver=giver,
+                    excluded=participants_db[idx]
+                )
 
     # 4) Clear session
     request.session.pop("event_data", None)
     request.session.pop("participants", None)
 
     return redirect("event_details", event_id=event.id)
+
 
 @login_required
 def generate_matches_view(request, event_id):
@@ -270,10 +287,10 @@ def generate_matches_view(request, event_id):
     # organizer-only
     if event.organizer != request.user:
         messages.error(request, "Only the organizer can generate matches.")
-        return redirect("event_detail", event_id=event.id)
+        return redirect("event_details", event_id=event.id)
 
     if request.method != "POST":
-        return redirect("event_detail", event_id=event.id)
+        return redirect("event_details", event_id=event.id)
 
     with transaction.atomic():
         # If re-generating, clear old matches first
@@ -290,6 +307,33 @@ def generate_matches_view(request, event_id):
             objs.append(Match(event=event, giver=giver, receiver=receiver))
         Match.objects.bulk_create(objs)
 
-    messages.success(request, "Matches generated!")
+        matches_qs = Match.objects.filter(event=event).select_related("giver", "receiver")
+        sent = 0
+        for m in matches_qs:
+            send_match_email(event, m.giver, m.receiver)
+            sent += 1
+
+    messages.success(request, f"Matches generated and emailed to {sent} participants!")
     return redirect("event_details", event_id=event.id)
 
+def send_match_email(event, giver, receiver):
+    login_link = f"{settings.SITE_URL}/login/"
+    subject = f"Your Secret Santa match for {event.event_name}"
+    body = (
+        f"Hi {giver.name},\n\n"
+        f"You are getting a gift for: {receiver.name}.\n\n"
+        f"Event details:\n"
+        f"- Date: {event.event_date}\n"
+        f"- Time: {event.time or '-'}\n"
+        f"- Location: {event.location or '-'}\n"
+        f"- Budget: {event.budget or '-'}\n\n"
+        f"You can also log in using this email ({giver.email}) to view your match at {login_link}.\n"
+    )
+
+    send_mail(
+        subject=subject,
+        message=body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        recipient_list=[giver.email],
+        fail_silently=False,
+    )
