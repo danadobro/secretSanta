@@ -1,0 +1,76 @@
+{% extends "santa/base.html" %}
+
+{% block title %}{{ event.event_name }}{% endblock %}
+    {% block content %}
+
+        
+
+        <div class="card">
+
+        
+        
+                <h1>{{ event.event_name }}</h1>
+
+            <p><strong>Date:</strong> {{ event.event_date }}</p>
+            <p><strong>Time:</strong> {{ event.time }}</p>
+            <p><strong>Location:</strong> {{ event.location }}</p>
+            <p><strong>Budget:</strong> {{ event.budget }}</p>
+            <p><strong>Organizer:</strong> {{ event.organizer.username }}</p>
+
+            </div>
+
+        <div class="card">
+            <h2>Participants</h2>
+            <ul>
+                {% for participant in event.participants.all %}
+                    <li>{{ participant.name }} ({{ participant.email }})</li>
+                {% endfor %}
+            </ul>
+
+
+        </div>
+
+        <div class="giftee">
+            <!-- Participant view -->
+            {% if participant %}
+                <div class="giftee">
+                {% if my_match %}
+                    <h2>You are getting a gift for:</h2>
+                    <p><strong>{{ my_match.receiver.name }}</strong></p>
+                {% else %}
+                    <h2>Your match isn’t generated yet.</h2>
+                    <p>Come back after the organizer generates matches.</p>
+                {% endif %}
+                </div>
+            {% else %}
+                <p><em>Your email isn’t on this event’s participant list.</em></p>
+            {% endif %}
+
+            <hr>
+
+            <!-- Organizer controls -->
+            {% if is_organizer %}
+                <h2>Organizer</h2>
+
+                {% if all_matches and all_matches|length > 0 %}
+                <p><strong>Matches have been generated.</strong></p>
+                {% else %}
+                <form method="post" action="{% url 'generate_matches' event.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">Generate Matches</button>
+                </form>
+                {% endif %}
+
+                {% if all_matches and all_matches|length > 0 %}
+                <h3>All matches</h3>
+                <ul>
+                    {% for m in all_matches %}
+                    <li>{{ m.giver.name }} → {{ m.receiver.name }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            {% endif %}
+        </div>
+            {% endblock %}
+            
+    

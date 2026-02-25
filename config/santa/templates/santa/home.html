@@ -1,0 +1,37 @@
+{% extends "santa/base.html" %}
+{% load static %}ç
+{% block title %}Home{% endblock %}
+    {% block content %}
+        <div class="card hero-card">
+
+            <div class="hero-text">
+                <h1 class="h1">Secret Santa, sorted</h1>
+                <p class="sub">
+                    Create a Secret Santa event, set exclusions, generate matches, and notify everyone.
+                </p>
+
+                {% if user.is_authenticated %}
+                    <p class="sub">Hi {{ user.first_name }}</p>
+
+                    <div class="actions actions-left">
+                        <a class="btn btn-primary" href="{% url 'create_event' %}">Create New Event</a>
+                        <a class="btn" href="{% url 'events' %}">View My Events</a>
+                    </div>
+
+                {% else %}
+                    <div class="actions actions-left">
+                        <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+                        <a class="btn" href="{% url 'signup' %}">Signup</a>
+                    </div>
+                {% endif %}
+            </div>
+
+
+            <div class="hero-image">
+                <img src="{% static 'santa/images/santa.png' %}" alt="Santa">
+            </div>
+
+        </div>
+    {% endblock %}
+
+

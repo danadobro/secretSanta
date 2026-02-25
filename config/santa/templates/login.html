@@ -1,0 +1,52 @@
+{% extends "santa/base.html" %}
+{% block title %}Login{% endblock %}
+    {% block content %}
+        <div class="card"> 
+
+            <form method="POST" class="login_form">
+
+                <h1> Welcome Back </h1>
+                <p class="sub">Log in to manage your Secret Santa events</p>
+
+                {% csrf_token %}
+
+
+                <hr>
+
+                <!-- Display error/success messages -->
+                {% if messages %}
+                <div class="alert" role="alert">
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- email input field -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp"
+                        placeholder="Enter your email" required>
+                </div>
+
+                <!-- Password input field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                </div>
+
+                <!-- Link to registration page -->
+                <p>Don't have an account <a href="{% url 'signup' %}">Signup</a> </p>
+                
+
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary">Submit</button>
+
+            </form>
+            
+
+
+    </div>
+{% endblock %}
+
+

@@ -1,0 +1,245 @@
+:root {
+    --bg: #F8F4F0;
+    --card: #FFFFFF;
+    --text: #1F2933;
+    --muted: #52606D;
+    --border: rgba(31, 41, 51, 0.12);
+
+    --gold: #CFAE70;
+    --pink: #E89DAA;
+
+    --radius: 16px;
+    --shadow: 0 12px 30px rgba(31, 41, 51, 0.10);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.container {
+    width: min(980px, 92vw);
+    margin: 24px auto;
+}
+
+.primary {
+    color: #E89DAA
+}
+
+/* Top bar */
+.topbar {
+    background: rgba(248, 244, 240, 0.80);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+}
+
+.brand {
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: var(--muted);
+    margin-left: 14px;
+    font-weight: 700;
+}
+
+.nav a:hover {
+    color: var(--text);
+}
+
+.link-danger {
+    color: #b42318 !important;
+}
+
+/* Cards */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin: 16px 0;
+}
+
+.h1 {
+    font-size: 34px;
+    margin: 6px 0 10px;
+    letter-spacing: -0.02em;
+}
+
+.sub {
+    color: var(--muted);
+    margin: 0 0 18px;
+    line-height: 1.6;
+}
+
+/* Inputs */
+.label {
+    display: block;
+    font-weight: 800;
+    margin: 12px 0 6px;
+}
+
+.input {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    outline: none;
+}
+
+.input::placeholder {
+    color: rgba(82, 96, 109, 0.7);
+}
+
+.input:focus {
+    border-color: rgba(207, 174, 112, 0.65);
+    box-shadow: 0 0 0 3px rgba(207, 174, 112, 0.22);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid #E89DAA;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: #E89DAA;
+    border: none;
+    color: #1F2933;
+}
+
+.btn-ghost {
+    background: transparent;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+.actions-left{
+    justify-content: flex-start;
+}
+
+/* Messages */
+.messages {
+    margin: 18px 0;
+}
+
+.message {
+    background: rgba(232, 157, 170, 0.18);
+    border: 1px solid rgba(232, 157, 170, 0.35);
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+/* Step pills */
+.stepbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 10px 0 18px;
+}
+
+.step {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.step.active {
+    color: var(--text);
+    border-color: rgba(207, 174, 112, 0.55);
+    background: rgba(207, 174, 112, 0.18);
+}
+
+.hidden {
+    display: none;
+}
+
+.small {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.error {
+    color: #b42318;
+    font-weight: 800;
+}
+
+.panel {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(31, 41, 51, 0.18);
+    background: rgba(248, 244, 240, 0.8);
+}
+
+.hero-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:40px;
+  padding: 32px;             
+  min-height: 320px;          
+}
+
+.hero-text{ flex: 1; }
+
+.hero-image{
+  flex: 0 0 320px;            
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+}
+
+.hero-image img{
+  width: 260px;
+  height: auto;
+  display:block;
+  object-fit: contain;
+}

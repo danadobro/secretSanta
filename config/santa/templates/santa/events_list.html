@@ -1,0 +1,51 @@
+{% extends "santa/base.html" %}
+{% block title %}My Events{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h1 class="h1">My Events</h1>
+    <p class="sub">Events you created or were invited to.</p>
+</div>
+
+{% if events %}
+
+    {% for event in events %}
+        <div class="card">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+
+                <div>
+                    <h2 style="margin:0 0 6px;">
+                        <a href="{% url 'event_details' event.id %}" style="text-decoration:none; color:var(--text); font-weight:800;">
+                            {{ event.event_name }}
+                        </a>
+                    </h2>
+
+                    <div class="small">
+                        <strong>Date:</strong> {{ event.event_date }}<br>
+                        <strong>Organizer:</strong> {{ event.organizer.first_name|default:event.organizer.username }}
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <a class="btn btn-primary" href="{% url 'event_details' event.id %}">
+                        Open Event →
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    {% endfor %}
+
+{% else %}
+
+    <div class="card">
+        <p class="sub">You are not part of any events yet.</p>
+        <a class="btn btn-primary" href="{% url 'create_event' %}">Create your first event</a>
+    </div>
+
+{% endif %}
+
+{% endblock %}
